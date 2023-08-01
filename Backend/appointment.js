@@ -4,15 +4,22 @@ const validator = require("validator");
 const appointmentSchema = new mongoose.Schema({
   clientFirstName: { type: String },
   clientLastName: { type: String },
-  clientemail: {
+  clientEmail: {
     type: String,
     validate: {
-      validator: validator.isEmail,
+      validator: function (value) {
+        return validator.isEmail(value);
+      },
       message: "{VALUE} is not a valid email",
     },
   },
+  status: {
+    type: String,
+    enum: ["scheduled", "canceled"],
+    default: "scheduled",
+  },
   appointmentDate: { type: Date, required: true },
-  appointmentwith: { type: String, required: false },
+  person: { type: String, required: true },
   appointmentDuration: { type: Number, required: true },
 });
 
