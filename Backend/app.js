@@ -117,6 +117,7 @@ app.get("/free-time-slots/:person", async (req, res) => {
     const appointments = await Appointment.find({ person: person }).sort({
       appointmentDate: 1,
     });
+    console.log(appointments);
 
     // Calculate free time slots based on existing appointments
     const timeSlots = [];
@@ -127,7 +128,7 @@ app.get("/free-time-slots/:person", async (req, res) => {
 
       let prevAppointmentEnd = moment(appointments[0].appointmentDate);
 
-      // Check time slots between appointments
+      // Checking time slots between appointments
       for (let i = 1; i < appointments.length; i++) {
         const currentAppointmentStart = moment(appointments[i].appointmentDate);
         const availableSlotStart = prevAppointmentEnd;
