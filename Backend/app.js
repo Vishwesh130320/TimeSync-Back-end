@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Appointment = require("./appointment");
 const app = express();
 const bodyParser = require("body-parser");
+const moment = require("moment");
 const mongoDBConnectionString =
   "mongodb+srv://vishweshshah:1234@cluster0.lx1ltgv.mongodb.net/AppointementsDB?retryWrites=true&w=majority";
 mongoose.connect(mongoDBConnectionString, {
@@ -109,82 +110,135 @@ app.put("/appointment/:id", async (req, res) => {
 });
 
 // Get Free Time Slots for a specific person
-app.get("/free-time-slots/:person", async (req, res) => {
-  try {
-    const { person } = req.params;
+// app.get("/free-time-slots/:person", async (req, res) => {
+//   try {
+//     const { person } = req.params;
 
-    // Find all appointments for the specified person
-    const appointments = await Appointment.find({ person: person }).sort({
+//     // Find all appointments for the specified person
+//     const appointments = await Appointment.find({ date: appointmentDate }).sort({
+//       appointmentDate: 1,
+//     });
+//     console.log(appointments);
+//     }
+// Calculate free time slots based on existing appointments
+//     const timeSlots = [];
+//     if (appointments.length > 0) {
+//       // Assume working hours are from 9 AM to 5 PM (adjust as needed)
+//       const startTime = moment("09:00:00", "HH:mm:ss");
+//       const endTime = moment("17:00:00", "HH:mm:ss");
+
+//       // let prevAppointmentEnd = moment(appointments[0].appointmentDate);
+
+//       //Set that contains all the slots with difference of 30 mins.
+
+//       //Set that contains all the booked appointments.
+
+//       // Checking time slots between appointments
+//       for (let i = 0; i < appointments.length; i++) {
+//         const currentAppointmentStart = moment(appointmentDate);
+//         const availableSlotStart = prevAppointmentEnd;
+//         const availableSlotEnd = currentAppointmentStart;
+
+//         if (availableSlotEnd.isAfter(availableSlotStart)) {
+//           const durationMinutes = availableSlotEnd.diff(
+//             availableSlotStart,
+//             "minutes"
+//           );
+//           if (durationMinutes >= 30) {
+//             // If the slot is at least 30 minutes, add it to the list of free time slots
+//             timeSlots.push({
+//               start: availableSlotStart.toISOString(),
+//               end: availableSlotEnd.toISOString(),
+//             });
+//           }
+//         }
+
+//         prevAppointmentEnd = moment(appointments[i].appointmentDate);
+//       }
+
+//       // Check time slot after the last appointment
+//       const lastAppointmentEnd = moment(
+//         appointments[appointments.length - 1].appointmentDate
+//       );
+//       const availableSlotStart = lastAppointmentEnd;
+//       const availableSlotEnd = endTime;
+
+//       if (availableSlotEnd.isAfter(availableSlotStart)) {
+//         const durationMinutes = availableSlotEnd.diff(
+//           availableSlotStart,
+//           "minutes"
+//         );
+//         if (durationMinutes >= 30) {
+//           // If the slot is at least 30 minutes, add it to the list of free time slots
+//           timeSlots.push({
+//             start: availableSlotStart.toISOString(),
+//             end: availableSlotEnd.toISOString(),
+//           });
+//         }
+//       }
+//     } else {
+//       // If there are no existing appointments, assume the person is available all day
+//       const startTime = moment("09:00:00", "HH:mm:ss");
+//       const endTime = moment("17:00:00", "HH:mm:ss");
+
+//       // Add the full working hours as the free time slot
+//       timeSlots.push({
+//         start: startTime.toISOString(),
+//         end: endTime.toISOString(),
+//       });
+//     }
+
+//     res.json(timeSlots);
+//   } catch (error) {
+//     res.status(500).json({ error: "Failed to retrieve free time slots" });
+//   }
+// });
+
+app.get("/free-time-slots/:date", async (req, res) => {
+  try {
+    const { date } = req.params;
+    console.log(req.params);
+    // Find all appointments
+
+    const startTime = moment(date).utc().set("hour", "09").set("minute", "00");
+    const endTime = moment(date).utc().set("hour", "17").set("minute", "00");
+    console.log(startTime.toDate(), endTime.toDate());
+    const appointments = await Appointment.find({
+      appointmentDate: {
+        $gte: startTime.toDate(),
+        $lte: endTime.toDate(),
+      },
+    }).sort({
       appointmentDate: 1,
     });
-    console.log(appointments);
 
-    // Calculate free time slots based on existing appointments
-    const timeSlots = [];
-    if (appointments.length > 0) {
-      // Assume working hours are from 9 AM to 5 PM (adjust as needed)
-      const startTime = moment("09:00:00", "HH:mm:ss");
-      const endTime = moment("17:00:00", "HH:mm:ss");
+    //Set that contains all the slots with difference of 30 mins.
+    const allTimeSlots = new Set();
 
-      let prevAppointmentEnd = moment(appointments[0].appointmentDate);
+    // Calculate diff
 
-      // Checking time slots between appointments
-      for (let i = 1; i < appointments.length; i++) {
-        const currentAppointmentStart = moment(appointments[i].appointmentDate);
-        const availableSlotStart = prevAppointmentEnd;
-        const availableSlotEnd = currentAppointmentStart;
-
-        if (availableSlotEnd.isAfter(availableSlotStart)) {
-          const durationMinutes = availableSlotEnd.diff(
-            availableSlotStart,
-            "minutes"
-          );
-          if (durationMinutes >= 30) {
-            // If the slot is at least 30 minutes, add it to the list of free time slots
-            timeSlots.push({
-              start: availableSlotStart.toISOString(),
-              end: availableSlotEnd.toISOString(),
-            });
-          }
-        }
-
-        prevAppointmentEnd = moment(appointments[i].appointmentDate);
-      }
-
-      // Check time slot after the last appointment
-      const lastAppointmentEnd = moment(
-        appointments[appointments.length - 1].appointmentDate
-      );
-      const availableSlotStart = lastAppointmentEnd;
-      const availableSlotEnd = endTime;
-
-      if (availableSlotEnd.isAfter(availableSlotStart)) {
-        const durationMinutes = availableSlotEnd.diff(
-          availableSlotStart,
-          "minutes"
-        );
-        if (durationMinutes >= 30) {
-          // If the slot is at least 30 minutes, add it to the list of free time slots
-          timeSlots.push({
-            start: availableSlotStart.toISOString(),
-            end: availableSlotEnd.toISOString(),
-          });
-        }
-      }
-    } else {
-      // If there are no existing appointments, assume the person is available all day
-      const startTime = moment("09:00:00", "HH:mm:ss");
-      const endTime = moment("17:00:00", "HH:mm:ss");
-
-      // Add the full working hours as the free time slot
-      timeSlots.push({
-        start: startTime.toISOString(),
-        end: endTime.toISOString(),
-      });
+    let currentTimeSlot = startTime.clone();
+    while (currentTimeSlot.isSameOrBefore(endTime)) {
+      allTimeSlots.add(currentTimeSlot.toISOString());
+      currentTimeSlot.add(30, "minutes");
     }
 
-    res.json(timeSlots);
+    console.log("appointments", appointments);
+
+    //Set that contains all the booked appointments.
+    const bookedAppointments = new Set();
+    for (const appointment of appointments) {
+      bookedAppointments.add(moment(appointment.appointmentDate).toISOString());
+    }
+
+    // Calculate free time slots
+    const freeTimeSlots = [...allTimeSlots].filter(
+      (slot) => !bookedAppointments.has(slot)
+    );
+
+    res.json(freeTimeSlots);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Failed to retrieve free time slots" });
   }
 });
