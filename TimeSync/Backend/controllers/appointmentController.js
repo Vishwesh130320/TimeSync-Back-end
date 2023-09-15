@@ -35,7 +35,6 @@ const appointmentController = {
   // Getting all Appointments
   getAllAppointments: async (req, res) => {
     try {
-      console.log("Get all appointement request");
       const appointments = await Appointment.find()
         .populate("doctorId")
         .populate("patientId");
