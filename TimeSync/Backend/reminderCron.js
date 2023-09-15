@@ -1,7 +1,7 @@
 const cron = require("node-cron");
 const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
-const Appointment = require("./appointment"); // Import your Appointment model
+const Appointment = require("./appointment");
 
 mongoose.connect(
   "mongodb+srv://vishweshshah:1234@cluster0.lx1ltgv.mongodb.net/AppointementsDB?retryWrites=true&w=majority",
