@@ -13,11 +13,24 @@ router.get(
   authMiddleware,
   appointmentController.getAllAppointments
 );
+// router.put(
+//   "/appointment/update/:id",
+//   authMiddleware,
+//   appointmentController.updateAppointment
+// );
+
 router.put(
-  "/appointment/update/:id",
+  "/appointment/cancel/:id",
   authMiddleware,
-  appointmentController.updateAppointment
+  appointmentController.cancelAppointment
 );
+
+router.put(
+  "/appointment/reschedule/:id",
+  authMiddleware,
+  appointmentController.rescheduleAppointment
+);
+
 router.get(
   "/appointment/freetimeslots/:date",
   authMiddleware,

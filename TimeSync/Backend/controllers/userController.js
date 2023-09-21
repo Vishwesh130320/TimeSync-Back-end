@@ -57,10 +57,41 @@ const userController = {
         "7f4e1dfc3228a6b24baa7ce744ecc3d9719f75990a704b8927ef136372c0566aa5aaabdb8b63b8de626f20574120564971b182d19a88ac3e502df10adead61d3"
       );
 
-      res.json({ token });
+      res.json({ token, id: user._id });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to log in" });
+    }
+  },
+
+  getUserProfile: async (req, res) => {
+    try {
+      const { username, email, role, birthdate, gender } = req.user;
+
+      res.json({ username, email, role, birthdate, gender });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to fetch user profile" });
+    }
+  },
+
+  getAllDoctors: async (req, res) => {
+    try {
+      // Find all users with the 'doctor' role
+      const doctors = await User.find({ role: "doctor" });
+
+      console.log(doctors);
+
+      const doctorProfiles = doctors.map((doctor) => ({
+        username: doctor.username,
+        email: doctor.email,
+        id: doctor.id,
+      }));
+
+      res.json(doctorProfiles);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Failed to fetch doctors" });
     }
   },
 };

@@ -14,6 +14,8 @@ const appointmentController = {
         notes,
       } = req.body;
 
+      console.log("Appointment object ", req.body);
+
       // Creating the appointment using the Appointment model
       const appointment = await Appointment.create({
         doctorId: doctorId,
@@ -35,6 +37,7 @@ const appointmentController = {
   // Getting all Appointments
   getAllAppointments: async (req, res) => {
     try {
+      console.log("Inside appointment");
       const appointments = await Appointment.find()
         .populate("doctorId")
         .populate("patientId");
@@ -46,11 +49,42 @@ const appointmentController = {
   },
 
   // Updating Appointment details
-  updateAppointment: async (req, res) => {
+  // updateAppointment: async (req, res) => {
+  //   try {
+  //     const { id } = req.params;
+
+  //     console.log("Id: ", id);
+  //     const { appointment } = req.body;
+
+  //     // Finding the appointment by its ID
+  //     const appointment = await Appointment.findById(id);
+
+  //     if (!appointment) {
+  //       return res.status(404).json({ error: "Appointment not found" });
+  //     }
+
+  //     // Updating appointment data
+  //     appointment.status = status;
+
+  //     console.log("Status ", status);
+  //     if (status === "Canceled") {
+  //       appointment.status = "Canceled";
+  //     }
+
+  //     // Saving the updated appointment
+  //     await appointment.save();
+
+  //     res.json(appointment);
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ error: "Failed to update appointment" });
+  //   }
+  // },
+
+  cancelAppointment: async (req, res) => {
     try {
       const { id } = req.params;
-      const { appointmentDate, durationInMinutes, status, location, notes } =
-        req.body;
+      console.log("Id: ", id);
 
       // Finding the appointment by its ID
       const appointment = await Appointment.findById(id);
@@ -59,17 +93,33 @@ const appointmentController = {
         return res.status(404).json({ error: "Appointment not found" });
       }
 
-      // Updating appointment data
-      appointment.appointmentDate =
-        appointmentDate || appointment.appointmentDate;
-      appointment.durationInMinutes =
-        durationInMinutes || appointment.durationInMinutes;
-      appointment.location = location || appointment.location;
-      appointment.notes = notes || appointment.notes;
+      appointment.status = "Canceled";
 
-      if (status === "Canceled") {
-        appointment.status = "Canceled";
+      // Saving the updated appointment
+      await appointment.save();
+
+      res.json(appointment);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to update appointment" });
+    }
+  },
+
+  rescheduleAppointment: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { appointmentDate } = req.body;
+
+      console.log(appointmentDate);
+
+      // Finding the appointment by its ID
+      const appointment = await Appointment.findById(id);
+
+      if (!appointment) {
+        return res.status(404).json({ error: "Appointment not found" });
       }
+
+      appointment.appointmentDate = appointmentDate;
 
       // Saving the updated appointment
       await appointment.save();

@@ -29,7 +29,7 @@ const changestatus = async () => {
           $lt: currentTime,
         },
       },
-      { $set: { status: "completed" } }
+      { $set: { status: "Completed" } }
     );
     console.log("Reminder cron job executed successfully");
   } catch (error) {
